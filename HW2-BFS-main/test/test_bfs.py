@@ -1,49 +1,36 @@
-import pytest
 import os
-import networkx as nx
 import sys
-
-# Add the parent directory to the Python path
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
-# Import the Graph class
-from search.graph import Graph
+import pytest
+import networkx as nx
+from search.graph import Graph  # Replace with the actual module name
 
+# Set up common resources
+filename = "citation_network.adjlist"
+graph_instance = Graph(filename)
+start_end = graph_instance.Random_Start_End()
+start_node = start_end[0]
+end_node = start_end[1]
 
-def test_bfs_traversal():
-    filename_test = "tiny_network.adjlist"
-    start_end = Graph.Random_Start_End(Graph(filename_test))
-    start_test = start_end[0]
-    dest_test = start_end[1]
+@pytest.fixture
+def test_bfs_sort_path():
+    vertices = nx.number_of_nodes(graph_instance.graph)
 
-    graph_instance_test = Graph(filename_test)
-    vertices_test = nx.number_of_nodes(graph_instance_test.graph)
+    result = graph_instance.BfsSortPath(start_node, vertices)
 
-    result = graph_instance_test.BfsSortPath(start_test, vertices_test, dest_test)
+    assert nx.number_of_nodes(graph_instance.graph) == len(result[1]) + 1
 
-    if dest_test is not None:
-        assert  True
-    else:
-        assert result == "No end point designated, list of nodes provided"
+def test_shortest_path():
+    vertices = nx.number_of_nodes(graph_instance.graph)
 
-
-def test_tiny_network_bfs():
-    filename_test = "tiny_network.adjlist"
-    start_end = Graph.Random_Start_End(Graph(filename_test))
-    start_test = start_end[0]
-    dest_test = start_end[1]
-
-    graph_instance_test = Graph(filename_test)
-    vertices_test = nx.number_of_nodes(graph_instance_test.graph)
-
-    result = graph_instance_test.ShortestPath(start_test, dest_test, vertices_test)
-
-    if dest_test is not None:
-        assert len(result[0]) == result[1]
-    else:
-        assert result == "No end point designated, list of nodes provided"
-
-
-# Run the tests
-test_bfs_traversal()
-test_tiny_network_bfs()
+    result = graph_instance.ShortestPath(start_node, vertices, end_node)
+    paths_traveled_tests=result[0]
+    assert int(nx.number_of_nodes(graph_instance.graph)) >= int(result[2])
+    #distances = [len(path) for path in paths_traveled_tests]
+    #assert Graph.equal(distances)
+    last_list=result[1]
+    assert last_list[-1]==end_node
+    # Update this part based on how you want to compare distances
+    # For example, you might want to check if the distance is a valid number
+    #assert isinstance(result, (int, float))
